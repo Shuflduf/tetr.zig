@@ -18,6 +18,10 @@ pub fn build(b: *Build) !void {
         .gles3 = opt_use_gles3,
         .wayland = opt_use_wayland,
     });
+    const emsdk = dep_sokol.builder.dependency("emsdk", .{});
+    const emsdk_install = sokol.emSdkInstallStep(b, emsdk, .{});
+    b.step("install-emsdk", "Install Emscripten SDK in zig-pkg").dependOn(emsdk_install);
+
     const mod = b.createModule(.{
         .root_source_file = b.path("src/tetr.zig"),
         .target = target,
@@ -51,7 +55,7 @@ fn buildNative(b: *Build, opts: Options) !void {
 // for web builds, the Zig code needs to be built into a library and linked with the Emscripten linker
 fn buildWeb(b: *Build, opts: Options) !void {
     const lib = b.addLibrary(.{
-        .name = "tetr_zig",
+        .name = "index",
         .root_module = opts.mod,
     });
 
@@ -70,7 +74,7 @@ fn buildWeb(b: *Build, opts: Options) !void {
     // attach Emscripten linker output to default install step
     b.getInstallStep().dependOn(&link_step.step);
     // ...and a special run step to start the web build output via 'emrun'
-    const run = sokol.emRunStep(b, .{ .name = "tetr_zig", .emsdk = emsdk });
+    const run = sokol.emRunStep(b, .{ .name = "index", .emsdk = emsdk });
     run.step.dependOn(&link_step.step);
     b.step("run", "Run tetr.zig").dependOn(&run.step);
 }

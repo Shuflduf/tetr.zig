@@ -3,12 +3,14 @@
 //
 //  Just clear the framebuffer with an animated color.
 //------------------------------------------------------------------------------
+const std = @import("std");
 const sokol = @import("sokol");
 const slog = sokol.log;
 const sg = sokol.gfx;
+const sgl = sokol.gl;
 const sapp = sokol.app;
 const sglue = sokol.glue;
-const print = @import("std").debug.print;
+const print = std.debug.print;
 
 const state = struct {
     var pass_action: sg.PassAction = .{};
@@ -17,6 +19,9 @@ const state = struct {
 export fn init() void {
     sg.setup(.{
         .environment = sglue.environment(),
+        .logger = .{ .func = slog.func },
+    });
+    sgl.setup(.{
         .logger = .{ .func = slog.func },
     });
     state.pass_action.colors[0] = .{
@@ -29,12 +34,34 @@ export fn init() void {
 export fn frame() void {
     const g = state.pass_action.colors[0].clear_value.g + 0.01;
     state.pass_action.colors[0].clear_value.g = if (g > 1.0) 0.0 else g;
+    // sokol.app.setMouseCursor(sokol.app.MouseCursor.NOT_ALLOWED);
+
+    sgl.defaults();
+    sgl.matrixModeProjection();
+    sgl.ortho(0, sapp.widthf(), sapp.heightf(), 0, -1, 1);
+
+    sgl.beginQuads();
+    sgl.c3f(1.0, 0.2, 1.0);
+    sgl.v2f(100, 100);
+    sgl.v2f(200, 100);
+    sgl.v2f(200, 200);
+    sgl.v2f(100, 200);
+    sgl.end();
+
     sg.beginPass(.{ .action = state.pass_action, .swapchain = sglue.swapchain() });
+    sgl.draw();
     sg.endPass();
     sg.commit();
 }
 
+export fn event(e: [*c]const sapp.Event) void {
+    if (e.*.type == .CHAR) {
+        print("{c}\n", .{@as(u8, @intCast(e.*.char_code))});
+    }
+}
+
 export fn cleanup() void {
+    sgl.shutdown();
     sg.shutdown();
 }
 
@@ -43,6 +70,7 @@ pub fn main() void {
         .init_cb = init,
         .frame_cb = frame,
         .cleanup_cb = cleanup,
+        .event_cb = event,
         .width = 640,
         .height = 480,
         .icon = .{ .sokol_default = true },
