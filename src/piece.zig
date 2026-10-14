@@ -52,8 +52,12 @@ fn nextPiece() void {
         shuffleBag();
         bag_counter = 0;
     }
-    current = .{ .idx = bag[bag_counter], .pos = start_pos, .rot = 0 };
+    current = .{ .idx = next[0], .pos = start_pos, .rot = 0 };
     gravity_timer = 0.0;
+    for (0..next_piece_count - 1) |i| {
+        next[i] = next[i + 1];
+    }
+    next[next_piece_count - 1] = bag[bag_counter];
     bag_counter += 1;
 }
 
@@ -71,6 +75,7 @@ fn initNext() void {
     for (0..next_piece_count) |i| {
         next[i] = bag[i];
     }
+    bag_counter = next_piece_count;
 }
 
 pub fn init() void {
