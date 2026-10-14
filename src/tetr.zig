@@ -9,6 +9,7 @@ const sglue = sokol.glue;
 const print = std.debug.print;
 
 const board = @import("board.zig");
+const piece = @import("piece.zig");
 
 pub const board_width: i8 = 10;
 pub const board_height: i8 = 20;
@@ -44,6 +45,8 @@ export fn init() void {
 }
 
 export fn frame() void {
+    piece.tick();
+
     sgl.defaults();
     sgl.matrixModeProjection();
     sgl.ortho(0, sapp.widthf(), sapp.heightf(), 0, -1, 1);
@@ -57,6 +60,7 @@ export fn frame() void {
 }
 
 export fn event(e: [*c]const sapp.Event) void {
+    piece.event(e);
     if (e.*.type == .CHAR) {
         print("{c}\n", .{@as(u8, @intCast(e.*.char_code))});
     }
