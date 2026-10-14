@@ -23,6 +23,15 @@ pub const srs: struct {
 
 const state = struct {};
 
+fn clear() void {
+    var action: sg.PassAction = .{};
+    action.colors[0] = .{
+        .load_action = .CLEAR,
+        .clear_value = .{ .r = 0, .g = 0, .b = 0, .a = 1 },
+    };
+    sg.beginPass(.{ .action = action, .swapchain = sglue.swapchain() });
+}
+
 export fn init() void {
     sg.setup(.{
         .environment = sglue.environment(),
@@ -32,8 +41,6 @@ export fn init() void {
         .depth_format = .NONE,
         .logger = .{ .func = slog.func },
     });
-    print("Backend: {}\n", .{sg.queryBackend()});
-    print("srs: {}\n", .{srs});
 }
 
 export fn frame() void {
@@ -41,21 +48,9 @@ export fn frame() void {
     sgl.matrixModeProjection();
     sgl.ortho(0, sapp.widthf(), sapp.heightf(), 0, -1, 1);
 
-    sgl.beginQuads();
-    sgl.c3f(1.0, 0.2, 1.0);
-    sgl.v2f(100, 100);
-    sgl.v2f(200, 100);
-    sgl.v2f(300, 300);
-    sgl.v2f(100, 200);
-    sgl.end();
-
-    var action: sg.PassAction = .{};
-    action.colors[0] = .{
-        .load_action = .CLEAR,
-        .clear_value = .{ .r = 0, .g = 0, .b = 0, .a = 1 },
-    };
-    sg.beginPass(.{ .action = action, .swapchain = sglue.swapchain() });
+    clear();
     board.draw();
+
     sgl.draw();
     sg.endPass();
     sg.commit();
