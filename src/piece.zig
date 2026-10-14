@@ -28,8 +28,7 @@ pub var current: Piece = undefined;
 fn tryMove(dir: [2]i8) bool {
     for (root.srs.pieces[current.idx][current.rot]) |pos| {
         const tile = .{ current.pos[0] + pos[0] + dir[0], current.pos[1] + pos[1] + dir[1] };
-        if (tile[0] < 0 or tile[0] > root.board_width - 1) return false;
-        if (tile[1] > root.board_height - 1) return false;
+        if (!board.safePos(tile)) return false;
     }
 
     current.pos[0] += dir[0];
@@ -41,8 +40,7 @@ fn tryMove(dir: [2]i8) bool {
 fn tryRotate(new_rot: usize) void {
     for (root.srs.pieces[current.idx][new_rot]) |pos| {
         const tile = .{ current.pos[0] + pos[0], current.pos[1] + pos[1] };
-        if (tile[0] < 0 or tile[0] > root.board_width - 1) return;
-        if (tile[1] > root.board_height - 1) return;
+        if (!board.safePos(tile)) return;
     }
 
     current.rot = new_rot;

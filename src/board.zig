@@ -106,6 +106,14 @@ fn drawCurrentPiece(tile_size: f32, offset_x: f32, offset_y: f32) void {
     }
 }
 
+pub fn safePos(tile: [2]i8) bool {
+    if (tile[0] < 0 or tile[0] > root.board_width - 1) return false;
+    if (tile[1] > root.board_height - 1) return false;
+    if (tiles[@intCast(tile[0])][@intCast(tile[1])] != null) return false;
+
+    return true;
+}
+
 pub fn init() void {
     tiles = @splat(@splat(null));
 }
