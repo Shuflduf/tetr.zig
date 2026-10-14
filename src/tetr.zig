@@ -64,9 +64,9 @@ export fn frame() void {
 
 export fn event(e: [*c]const sapp.Event) void {
     piece.event(e);
-    if (e.*.type == .CHAR) {
-        print("{c}\n", .{@as(u8, @intCast(e.*.char_code))});
-    }
+    // if (e.*.type == .CHAR) {
+    //     print("{c}\n", .{@as(u8, @intCast(e.*.char_code))});
+    // }
 }
 
 export fn cleanup() void {

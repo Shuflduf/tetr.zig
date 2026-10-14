@@ -52,6 +52,7 @@ fn placePiece() void {
         board.tiles[@intCast(tile[0])][@intCast(tile[1])] = current.idx;
     }
 
+    board.clearLines();
     nextPiece();
 }
 

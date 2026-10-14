@@ -114,6 +114,35 @@ pub fn safePos(tile: [2]i8) bool {
     return true;
 }
 
+pub fn clearLines() void {
+    var full_rows: [root.board_height]bool = @splat(false);
+    row: for (0..root.board_height) |y| {
+        for (0..root.board_width) |x| {
+            if (tiles[x][y] == null) continue :row;
+        }
+        full_rows[y] = true;
+    }
+
+    var dest: usize = root.board_height;
+    var source: usize = root.board_height;
+    while (source > 0) {
+        source -= 1;
+        if (full_rows[source]) continue;
+        dest -= 1;
+        if (dest != source) {
+            for (0..root.board_width) |x| {
+                tiles[x][dest] = tiles[x][source];
+            }
+        }
+    }
+
+    for (0..dest) |y| {
+        for (0..root.board_width) |x| {
+            tiles[x][y] = null;
+        }
+    }
+}
+
 pub fn init() void {
     tiles = @splat(@splat(null));
 }
