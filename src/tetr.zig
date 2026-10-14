@@ -8,7 +8,10 @@ const sapp = sokol.app;
 const sglue = sokol.glue;
 const print = std.debug.print;
 
-const state = struct {};
+const board = @import("board.zig");
+
+pub const board_width: i8 = 10;
+pub const board_height: i8 = 20;
 pub const srs: struct {
     pieces: [7][4][4][2]i8,
     kicks: [8][4][2]i8,
@@ -17,6 +20,8 @@ pub const srs: struct {
     scoring_tspin: [4]u32,
     scoring_mini: [3]u32,
 } = @import("srs.zon");
+
+const state = struct {};
 
 export fn init() void {
     sg.setup(.{
@@ -50,6 +55,7 @@ export fn frame() void {
         .clear_value = .{ .r = 0, .g = 0, .b = 0, .a = 1 },
     };
     sg.beginPass(.{ .action = action, .swapchain = sglue.swapchain() });
+    board.draw();
     sgl.draw();
     sg.endPass();
     sg.commit();

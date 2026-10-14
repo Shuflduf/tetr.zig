@@ -1,0 +1,78 @@
+const sokol = @import("sokol");
+const std = @import("std");
+const slog = sokol.log;
+const sg = sokol.gfx;
+const sgl = sokol.gl;
+const sapp = sokol.app;
+const sglue = sokol.glue;
+
+const root = @import("root");
+// const print = std.debug.print;
+
+const Colour = struct {
+    r: u8,
+    g: u8,
+    b: u8,
+    a: u8 = 255,
+};
+
+pub const colours: [7]Colour = .{
+    parseHex("#ff3030"),
+    parseHex("#ff8330"),
+    parseHex("#ffd130"),
+    parseHex("#60ec3f"),
+    parseHex("#3fd2ec"),
+    parseHex("#3f53ec"),
+    parseHex("#ff4fe0"),
+};
+
+const board_colour: Colour = parseHex("#262626");
+
+fn parseHex(comptime hex: []const u8) Colour {
+    if (hex.len != 7 and hex.len != 9 or hex[0] != '#') {
+        @compileError("Invalid hex colour format");
+    }
+    return .{
+        .r = std.fmt.parseInt(u8, hex[1..3], 16) catch @compileError("Invalid red value"),
+        .g = std.fmt.parseInt(u8, hex[3..5], 16) catch @compileError("Invalid green value"),
+        .b = std.fmt.parseInt(u8, hex[5..7], 16) catch @compileError("Invalid blue value"),
+        .a = if (hex.len == 9)
+            std.fmt.parseInt(u8, hex[7..9], 16) catch @compileError("Invalid alpha value")
+        else
+            255,
+    };
+}
+
+fn drawOutline(tile_size: f32, offset_x: f32, offset_y: f32) void {
+    sgl.beginQuads();
+    sgl.c3b(board_colour.r, board_colour.g, board_colour.b);
+    sgl.v2f(offset_x - tile_size, offset_y);
+    sgl.v2f(offset_x, offset_y);
+    sgl.v2f(offset_x, offset_y + tile_size * (root.board_height + 1));
+    sgl.v2f(offset_x - tile_size, offset_y + tile_size * (root.board_height + 1));
+    sgl.end();
+
+    sgl.beginQuads();
+    sgl.c3b(board_colour.r, board_colour.g, board_colour.b);
+    sgl.v2f(offset_x + tile_size * root.board_width, offset_y);
+    sgl.v2f(offset_x + tile_size * (root.board_width + 1), offset_y);
+    sgl.v2f(offset_x + tile_size * (root.board_width + 1), offset_y + tile_size * (root.board_height + 1));
+    sgl.v2f(offset_x + tile_size * root.board_width, offset_y + tile_size * (root.board_height + 1));
+    sgl.end();
+
+    sgl.beginQuads();
+    sgl.c3b(board_colour.r, board_colour.g, board_colour.b);
+    sgl.v2f(offset_x, offset_y + (tile_size * root.board_height));
+    sgl.v2f(offset_x + tile_size * (root.board_width), offset_y + (tile_size * (root.board_height)));
+    sgl.v2f(offset_x + tile_size * (root.board_width), offset_y + (tile_size * (root.board_height + 1)));
+    sgl.v2f(offset_x, offset_y + (tile_size * (root.board_height + 1)));
+    sgl.end();
+}
+
+pub fn draw() void {
+    const tile_size: f32 = @min(sapp.heightf() / (root.board_height + 1), sapp.widthf() / (root.board_width + 2));
+    const offset_x = @divTrunc((sapp.widthf() - tile_size * root.board_width), 2);
+    const offset_y = @divTrunc((sapp.heightf() - tile_size * (root.board_height + 1)), 2);
+
+    drawOutline(tile_size, offset_x, offset_y);
+}
