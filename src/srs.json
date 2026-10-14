@@ -1,0 +1,310 @@
+{
+  "_comment": [
+    "The Super Rotation System from most modern Tetris games",
+    "Sources: https://tetris.wiki/SRS, https://tetris.wiki/Scoring",
+    "The pieces are defined from the top left square, where +x is right and +y is down",
+    "It goes in order of the rainbow, with Red being the first and going to Pink being last",
+    "Red = Z, Orange = L, Yellow = O, Green = S, Cyan = I, Blue = J, Pink = T",
+    "You can access the position of a block in a piece in a rotation by using pieces[Piece][Rotation][Block][0 for x, 1 for y]",
+    "Each rotation state is perfect, meaning the tip of a piece shares the index with the tip of the next rotation",
+    "The kicks are the offsets to test when a piece collides with a wall or another piece",
+    "To get the list of kicks to test, follow this pattern:",
+    "1. Get the index of the current rotation state of the piece",
+    "2. Get the index of the next rotation state of the piece",
+    "3. If you're going clockwise, the index you want will be odd, and if you're going counterclockwise, it will be even",
+    "In other words, the mapping is as follows (R = clockwise once from spawn, L = counterclockwise once from spawn, 2 = 2 rotations from spawn, 0 = 0 rotations from spawn):",
+    "0->R = 0, R->0 = 1, R->2 = 2, 2->R = 3, 2->L = 4, L->2 = 5, L->0 = 6, 0->L = 7",
+    "I Pieces (Cyan) use a seperate set of kicks",
+    "180 spins arent supported currently, maybe I'll add them later",
+    "For scoring: scoring_lines can be used by getting the number of lines cleared, and using that - 1 as the index, so 1 line clear would be scoring_lines[0]",
+    "scoring_tspin can be used by directly using the number of lines cleared as the index, so 1 line clear would be scoring_tspin[1]",
+    "scoring_mini is the same as scoring_tspin, except for mini tspins"
+  ],
+  "pieces": [
+    [
+      [
+        [0, 0],
+        [1, 0],
+        [1, 1],
+        [2, 1]
+      ],
+      [
+        [2, 0],
+        [2, 1],
+        [1, 1],
+        [1, 2]
+      ],
+      [
+        [2, 2],
+        [1, 2],
+        [1, 1],
+        [0, 1]
+      ],
+      [
+        [0, 2],
+        [0, 1],
+        [1, 1],
+        [1, 0]
+      ]
+    ],
+    [
+      [
+        [0, 1],
+        [1, 1],
+        [2, 1],
+        [2, 0]
+      ],
+      [
+        [1, 0],
+        [1, 1],
+        [1, 2],
+        [2, 2]
+      ],
+      [
+        [2, 1],
+        [1, 1],
+        [0, 1],
+        [0, 2]
+      ],
+      [
+        [1, 2],
+        [1, 1],
+        [1, 0],
+        [0, 0]
+      ]
+    ],
+    [
+      [
+        [1, 0],
+        [2, 0],
+        [1, 1],
+        [2, 1]
+      ],
+      [
+        [1, 1],
+        [1, 0],
+        [2, 1],
+        [2, 0]
+      ],
+      [
+        [2, 1],
+        [1, 1],
+        [2, 0],
+        [1, 0]
+      ],
+      [
+        [2, 0],
+        [2, 1],
+        [1, 0],
+        [1, 1]
+      ]
+    ],
+    [
+      [
+        [0, 1],
+        [1, 1],
+        [1, 0],
+        [2, 0]
+      ],
+      [
+        [1, 0],
+        [1, 1],
+        [2, 1],
+        [2, 2]
+      ],
+      [
+        [2, 1],
+        [1, 1],
+        [1, 2],
+        [0, 2]
+      ],
+      [
+        [1, 2],
+        [1, 1],
+        [0, 1],
+        [0, 0]
+      ]
+    ],
+    [
+      [
+        [0, 1],
+        [1, 1],
+        [2, 1],
+        [3, 1]
+      ],
+      [
+        [2, 0],
+        [2, 1],
+        [2, 2],
+        [2, 3]
+      ],
+      [
+        [3, 2],
+        [2, 2],
+        [1, 2],
+        [0, 2]
+      ],
+      [
+        [1, 3],
+        [1, 2],
+        [1, 1],
+        [1, 0]
+      ]
+    ],
+    [
+      [
+        [0, 0],
+        [0, 1],
+        [1, 1],
+        [2, 1]
+      ],
+      [
+        [2, 0],
+        [1, 0],
+        [1, 1],
+        [1, 2]
+      ],
+      [
+        [2, 2],
+        [2, 1],
+        [1, 1],
+        [0, 1]
+      ],
+      [
+        [0, 2],
+        [1, 2],
+        [1, 1],
+        [1, 0]
+      ]
+    ],
+    [
+      [
+        [0, 1],
+        [1, 1],
+        [2, 1],
+        [1, 0]
+      ],
+      [
+        [1, 0],
+        [1, 1],
+        [1, 2],
+        [2, 1]
+      ],
+      [
+        [2, 1],
+        [1, 1],
+        [0, 1],
+        [1, 2]
+      ],
+      [
+        [1, 2],
+        [1, 1],
+        [1, 0],
+        [0, 1]
+      ]
+    ]
+  ],
+  "kicks": [
+    [
+      [-1, 0],
+      [-1, -1],
+      [0, 2],
+      [-1, 2]
+    ],
+    [
+      [1, 0],
+      [1, 1],
+      [0, -2],
+      [1, -2]
+    ],
+    [
+      [1, 0],
+      [1, 1],
+      [0, -2],
+      [1, -2]
+    ],
+    [
+      [-1, 0],
+      [-1, -1],
+      [0, 2],
+      [-1, 2]
+    ],
+    [
+      [1, 0],
+      [1, -1],
+      [0, 2],
+      [1, 2]
+    ],
+    [
+      [-1, 0],
+      [-1, 1],
+      [0, -2],
+      [-1, -2]
+    ],
+    [
+      [-1, 0],
+      [-1, 1],
+      [0, -2],
+      [-1, -2]
+    ],
+    [
+      [1, 0],
+      [1, -1],
+      [0, 2],
+      [1, 2]
+    ]
+  ],
+  "kicks_i": [
+    [
+      [-2, 0],
+      [1, 0],
+      [-2, 1],
+      [1, -2]
+    ],
+    [
+      [2, 0],
+      [-1, 0],
+      [2, -1],
+      [-1, 2]
+    ],
+    [
+      [-1, 0],
+      [2, 0],
+      [-1, -2],
+      [2, 1]
+    ],
+    [
+      [1, 0],
+      [-2, 0],
+      [1, 2],
+      [-2, -1]
+    ],
+    [
+      [2, 0],
+      [-1, 0],
+      [2, -1],
+      [-1, 2]
+    ],
+    [
+      [-2, 0],
+      [1, 0],
+      [-2, 1],
+      [1, -2]
+    ],
+    [
+      [1, 0],
+      [-2, 0],
+      [1, 2],
+      [-2, -1]
+    ],
+    [
+      [-1, 0],
+      [2, 0],
+      [-1, -2],
+      [2, 1]
+    ]
+  ],
+  "scoring_lines": [100, 300, 500, 800],
+  "scoring_tspin": [400, 800, 1200, 1600],
+  "scoring_mini": [100, 200, 400]
+}

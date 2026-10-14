@@ -1,8 +1,4 @@
-//------------------------------------------------------------------------------
-//  clear.zig
-//
-//  Just clear the framebuffer with an animated color.
-//------------------------------------------------------------------------------
+const srs_json = @embedFile("srs.json");
 const std = @import("std");
 const sokol = @import("sokol");
 const slog = sokol.log;
@@ -12,9 +8,15 @@ const sapp = sokol.app;
 const sglue = sokol.glue;
 const print = std.debug.print;
 
-const state = struct {
-    var pass_action: sg.PassAction = .{};
-};
+const state = struct {};
+pub const srs: struct {
+    pieces: [7][4][4][2]i8,
+    kicks: [8][4][2]i8,
+    kicks_i: [8][4][2]i8,
+    scoring_lines: [4]u32,
+    scoring_tspin: [4]u32,
+    scoring_mini: [3]u32,
+} = @import("srs.zon");
 
 export fn init() void {
     sg.setup(.{
@@ -22,20 +24,14 @@ export fn init() void {
         .logger = .{ .func = slog.func },
     });
     sgl.setup(.{
+        .depth_format = .NONE,
         .logger = .{ .func = slog.func },
     });
-    state.pass_action.colors[0] = .{
-        .load_action = .CLEAR,
-        .clear_value = .{ .r = 1, .g = 1, .b = 0, .a = 1 },
-    };
     print("Backend: {}\n", .{sg.queryBackend()});
+    print("srs: {}\n", .{srs});
 }
 
 export fn frame() void {
-    const g = state.pass_action.colors[0].clear_value.g + 0.01;
-    state.pass_action.colors[0].clear_value.g = if (g > 1.0) 0.0 else g;
-    // sokol.app.setMouseCursor(sokol.app.MouseCursor.NOT_ALLOWED);
-
     sgl.defaults();
     sgl.matrixModeProjection();
     sgl.ortho(0, sapp.widthf(), sapp.heightf(), 0, -1, 1);
@@ -44,11 +40,16 @@ export fn frame() void {
     sgl.c3f(1.0, 0.2, 1.0);
     sgl.v2f(100, 100);
     sgl.v2f(200, 100);
-    sgl.v2f(200, 200);
+    sgl.v2f(300, 300);
     sgl.v2f(100, 200);
     sgl.end();
 
-    sg.beginPass(.{ .action = state.pass_action, .swapchain = sglue.swapchain() });
+    var action: sg.PassAction = .{};
+    action.colors[0] = .{
+        .load_action = .CLEAR,
+        .clear_value = .{ .r = 0, .g = 0, .b = 0, .a = 1 },
+    };
+    sg.beginPass(.{ .action = action, .swapchain = sglue.swapchain() });
     sgl.draw();
     sg.endPass();
     sg.commit();
