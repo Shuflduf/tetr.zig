@@ -3,6 +3,7 @@ const std = @import("std");
 const sapp = sokol.app;
 
 const root = @import("root");
+const board = @import("board.zig");
 
 pub const Piece = struct {
     pos: [2]i8,
@@ -47,6 +48,15 @@ fn tryRotate(new_rot: usize) void {
     current.rot = new_rot;
 }
 
+fn placePiece() void {
+    for (root.srs.pieces[current.idx][current.rot]) |pos| {
+        const tile = .{ current.pos[0] + pos[0], current.pos[1] + pos[1] };
+        board.tiles[@intCast(tile[0])][@intCast(tile[1])] = current.idx;
+    }
+
+    nextPiece();
+}
+
 fn nextPiece() void {
     if (bag_counter >= bag.len) {
         shuffleBag();
@@ -62,7 +72,6 @@ fn nextPiece() void {
 }
 
 fn initRng() void {
-    std.debug.print("time: {}", .{sokol.time.now()});
     prng = std.Random.DefaultPrng.init(sokol.time.now());
 }
 
@@ -79,12 +88,10 @@ fn initNext() void {
 }
 
 pub fn init() void {
-    // bag = initBag();
     initRng();
     shuffleBag();
     initNext();
     nextPiece();
-    // initBag();
 }
 
 pub fn tick() void {
@@ -92,11 +99,7 @@ pub fn tick() void {
     if (gravity_timer > gravity_time) {
         gravity_timer = 0.0;
         const valid = tryMove(.{ 0, 1 });
-        if (!valid) {
-            current = .{ .idx = 0, .pos = start_pos, .rot = 0 };
-            gravity_timer = 0.0;
-        }
-        // current.pos[1] += 1;
+        if (!valid) placePiece();
     }
 }
 
@@ -108,9 +111,8 @@ pub fn event(ev: [*c]const sapp.Event) void {
             .D => tryMove(.{ 1, 0 }),
             .W => {
                 const valid = tryMove(.{ 0, 1 });
-                if (!valid) {
-                    nextPiece();
-                }
+                if (!valid) placePiece();
+
                 gravity_timer = 0.0;
             },
             .LEFT => tryRotate((current.rot + 3) % 4),

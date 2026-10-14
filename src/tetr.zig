@@ -35,7 +35,6 @@ fn clear() void {
 }
 
 export fn init() void {
-    print("init", .{});
     stime.setup();
     sg.setup(.{
         .environment = sglue.environment(),
@@ -49,7 +48,6 @@ export fn init() void {
 }
 
 export fn frame() void {
-    print("frame", .{});
     piece.tick();
 
     sgl.defaults();
@@ -65,7 +63,6 @@ export fn frame() void {
 }
 
 export fn event(e: [*c]const sapp.Event) void {
-    print("event", .{});
     piece.event(e);
     if (e.*.type == .CHAR) {
         print("{c}\n", .{@as(u8, @intCast(e.*.char_code))});
@@ -73,7 +70,6 @@ export fn event(e: [*c]const sapp.Event) void {
 }
 
 export fn cleanup() void {
-    print("cleanup", .{});
     sgl.shutdown();
     sg.shutdown();
 }
