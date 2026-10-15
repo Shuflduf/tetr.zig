@@ -32,6 +32,11 @@ const next_offset: [2]i8 = .{ 12, 1 };
 const hold_offset: [2]i8 = .{ -6, 1 };
 const board_colour: Colour = parseHex("#262626");
 
+var tile_size: f32 = undefined;
+
+var offset_x: f32 = undefined;
+var offset_y: f32 = undefined;
+
 pub var tiles: [root.board_width][root.board_height]?usize = undefined;
 
 fn parseHex(comptime hex: []const u8) Colour {
@@ -49,7 +54,17 @@ fn parseHex(comptime hex: []const u8) Colour {
     };
 }
 
-fn drawOutline(tile_size: f32, offset_x: f32, offset_y: f32) void {
+fn tile(col: Colour, pos: [2]i8) void {
+    sgl.beginQuads();
+    sgl.c3b(col.r, col.g, col.b);
+    sgl.v2f(offset_x + tile_size * pos[0], offset_y + tile_size * pos[1]);
+    sgl.v2f(offset_x + tile_size * (pos[0] + 1), offset_y + tile_size * pos[1]);
+    sgl.v2f(offset_x + tile_size * (pos[0] + 1), offset_y + tile_size * (pos[1] + 1));
+    sgl.v2f(offset_x + tile_size * pos[0], offset_y + tile_size * (pos[1] + 1));
+    sgl.end();
+}
+
+fn drawOutline() void {
     sgl.beginQuads();
     sgl.c3b(board_colour.r, board_colour.g, board_colour.b);
     sgl.v2f(offset_x - tile_size, offset_y);
@@ -75,80 +90,56 @@ fn drawOutline(tile_size: f32, offset_x: f32, offset_y: f32) void {
     sgl.end();
 }
 
-fn drawTiles(tile_size: f32, offset_x: f32, offset_y: f32) void {
+fn drawTiles() void {
     for (tiles, 0..) |column, x| {
         for (column, 0..) |idx, y| {
             if (idx == null) continue;
 
             const col = colours[idx.?];
-            const tile: [2]f32 = .{ @floatFromInt(x), @floatFromInt(y) };
+            const pos: [2]i8 = .{ @intCast(x), @intCast(y) };
 
-            sgl.beginQuads();
-            sgl.c3b(col.r, col.g, col.b);
-            sgl.v2f(offset_x + tile_size * tile[0], offset_y + tile_size * tile[1]);
-            sgl.v2f(offset_x + tile_size * (tile[0] + 1), offset_y + tile_size * tile[1]);
-            sgl.v2f(offset_x + tile_size * (tile[0] + 1), offset_y + tile_size * (tile[1] + 1));
-            sgl.v2f(offset_x + tile_size * tile[0], offset_y + tile_size * (tile[1] + 1));
-            sgl.end();
+            tile(col, pos);
         }
     }
 }
 
-fn drawCurrentPiece(tile_size: f32, offset_x: f32, offset_y: f32) void {
-    for (root.srs.pieces[piece.current.idx][piece.current.rot]) |pos| {
-        const tile = .{ piece.current.pos[0] + pos[0], piece.current.pos[1] + pos[1] };
+fn drawCurrentPiece() void {
+    for (root.srs.pieces[piece.current.idx][piece.current.rot]) |offset| {
+        const pos = .{ piece.current.pos[0] + offset[0], piece.current.pos[1] + offset[1] };
         const col = colours[piece.current.idx];
 
-        sgl.beginQuads();
-        sgl.c3b(col.r, col.g, col.b);
-        sgl.v2f(offset_x + tile_size * tile[0], offset_y + tile_size * tile[1]);
-        sgl.v2f(offset_x + tile_size * (tile[0] + 1), offset_y + tile_size * tile[1]);
-        sgl.v2f(offset_x + tile_size * (tile[0] + 1), offset_y + tile_size * (tile[1] + 1));
-        sgl.v2f(offset_x + tile_size * tile[0], offset_y + tile_size * (tile[1] + 1));
-        sgl.end();
+        tile(col, pos);
     }
 }
 
-fn drawNextPieces(tile_size: f32, offset_x: f32, offset_y: f32) void {
+fn drawNextPieces() void {
     for (bag.next, 0..) |idx, i| {
-        for (root.srs.pieces[idx][0]) |pos| {
+        for (root.srs.pieces[idx][0]) |offset| {
             const i_u8: i8 = @intCast(i);
             const dv: i8 = i_u8 * 3;
-            const tile = .{ pos[0] + next_offset[0], pos[1] + dv + next_offset[1] };
+            const pos = .{ offset[0] + next_offset[0], offset[1] + dv + next_offset[1] };
             const col = colours[idx];
 
-            sgl.beginQuads();
-            sgl.c3b(col.r, col.g, col.b);
-            sgl.v2f(offset_x + tile_size * tile[0], offset_y + tile_size * tile[1]);
-            sgl.v2f(offset_x + tile_size * (tile[0] + 1), offset_y + tile_size * tile[1]);
-            sgl.v2f(offset_x + tile_size * (tile[0] + 1), offset_y + tile_size * (tile[1] + 1));
-            sgl.v2f(offset_x + tile_size * tile[0], offset_y + tile_size * (tile[1] + 1));
-            sgl.end();
+            tile(col, pos);
         }
     }
 }
 
-fn drawHoldPiece(tile_size: f32, offset_x: f32, offset_y: f32) void {
+fn drawHoldPiece() void {
     if (bag.held == null) return;
 
-    for (root.srs.pieces[bag.held.?][0]) |pos| {
-        const tile = .{ pos[0] + hold_offset[0], pos[1] + hold_offset[1] };
+    for (root.srs.pieces[bag.held.?][0]) |offset| {
+        const pos = .{ offset[0] + hold_offset[0], offset[1] + hold_offset[1] };
         const col = colours[bag.held.?];
 
-        sgl.beginQuads();
-        sgl.c3b(col.r, col.g, col.b);
-        sgl.v2f(offset_x + tile_size * tile[0], offset_y + tile_size * tile[1]);
-        sgl.v2f(offset_x + tile_size * (tile[0] + 1), offset_y + tile_size * tile[1]);
-        sgl.v2f(offset_x + tile_size * (tile[0] + 1), offset_y + tile_size * (tile[1] + 1));
-        sgl.v2f(offset_x + tile_size * tile[0], offset_y + tile_size * (tile[1] + 1));
-        sgl.end();
+        tile(col, pos);
     }
 }
 
-pub fn safePos(tile: [2]i8) bool {
-    if (tile[0] < 0 or tile[0] > root.board_width - 1) return false;
-    if (tile[1] > root.board_height - 1) return false;
-    if (tiles[@intCast(tile[0])][@intCast(tile[1])] != null) return false;
+pub fn safePos(pos: [2]i8) bool {
+    if (pos[0] < 0 or pos[0] > root.board_width - 1) return false;
+    if (pos[1] > root.board_height - 1) return false;
+    if (tiles[@intCast(pos[0])][@intCast(pos[1])] != null) return false;
 
     return true;
 }
@@ -187,13 +178,13 @@ pub fn init() void {
 }
 
 pub fn draw() void {
-    const tile_size: f32 = @min(sapp.heightf() / (root.board_height + 1), sapp.widthf() / (root.board_width + 2));
-    const offset_x = @divTrunc((sapp.widthf() - tile_size * root.board_width), 2);
-    const offset_y = @divTrunc((sapp.heightf() - tile_size * (root.board_height + 1)), 2);
+    tile_size = @min(sapp.heightf() / (root.board_height + 1), sapp.widthf() / (root.board_width + 2));
+    offset_x = @divTrunc((sapp.widthf() - tile_size * root.board_width), 2);
+    offset_y = @divTrunc((sapp.heightf() - tile_size * (root.board_height + 1)), 2);
 
-    drawOutline(tile_size, offset_x, offset_y);
-    drawTiles(tile_size, offset_x, offset_y);
-    drawCurrentPiece(tile_size, offset_x, offset_y);
-    drawNextPieces(tile_size, offset_x, offset_y);
-    drawHoldPiece(tile_size, offset_x, offset_y);
+    drawOutline();
+    drawTiles();
+    drawCurrentPiece();
+    drawNextPieces();
+    drawHoldPiece();
 }
