@@ -8,6 +8,7 @@ const sglue = sokol.glue;
 
 const root = @import("root");
 const piece = @import("piece.zig");
+const bag = @import("bag.zig");
 // const print = std.debug.print;
 
 const Colour = struct {
@@ -27,6 +28,7 @@ pub const colours: [7]Colour = .{
     parseHex("#ff4fe0"),
 };
 
+const next_offset: [2]i8 = .{ 12, 1 };
 const board_colour: Colour = parseHex("#262626");
 
 pub var tiles: [root.board_width][root.board_height]?usize = undefined;
@@ -106,6 +108,25 @@ fn drawCurrentPiece(tile_size: f32, offset_x: f32, offset_y: f32) void {
     }
 }
 
+fn drawNextPieces(tile_size: f32, offset_x: f32, offset_y: f32) void {
+    for (bag.next, 0..) |idx, i| {
+        for (root.srs.pieces[idx][0]) |pos| {
+            const i_u8: i8 = @intCast(i);
+            const dv: i8 = i_u8 * 3;
+            const tile = .{ pos[0] + next_offset[0], pos[1] + dv + next_offset[1] };
+            const col = colours[idx];
+
+            sgl.beginQuads();
+            sgl.c3b(col.r, col.g, col.b);
+            sgl.v2f(offset_x + tile_size * tile[0], offset_y + tile_size * tile[1]);
+            sgl.v2f(offset_x + tile_size * (tile[0] + 1), offset_y + tile_size * tile[1]);
+            sgl.v2f(offset_x + tile_size * (tile[0] + 1), offset_y + tile_size * (tile[1] + 1));
+            sgl.v2f(offset_x + tile_size * tile[0], offset_y + tile_size * (tile[1] + 1));
+            sgl.end();
+        }
+    }
+}
+
 pub fn safePos(tile: [2]i8) bool {
     if (tile[0] < 0 or tile[0] > root.board_width - 1) return false;
     if (tile[1] > root.board_height - 1) return false;
@@ -155,4 +176,5 @@ pub fn draw() void {
     drawOutline(tile_size, offset_x, offset_y);
     drawTiles(tile_size, offset_x, offset_y);
     drawCurrentPiece(tile_size, offset_x, offset_y);
+    drawNextPieces(tile_size, offset_x, offset_y);
 }

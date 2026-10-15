@@ -12,7 +12,8 @@ var prng: std.Random.DefaultPrng = undefined;
 
 var bag: [7]usize = undefined;
 var bag_counter: usize = 0;
-var next: [next_piece_count]usize = undefined;
+
+pub var next: [next_piece_count]usize = undefined;
 
 fn initRng() void {
     prng = std.Random.DefaultPrng.init(sokol.time.now());
