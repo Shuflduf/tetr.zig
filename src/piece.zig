@@ -46,6 +46,7 @@ fn placePiece() void {
     }
 
     board.clearLines();
+    bag.just_held = false;
     nextPiece();
 }
 
@@ -69,6 +70,7 @@ pub fn tick() void {
 
 pub fn event(ev: [*c]const sapp.Event) void {
     const e = ev.*;
+    if (e.key_repeat == true) return;
     if (e.type == .KEY_DOWN) {
         _ = switch (e.key_code) {
             .A => tryMove(.{ -1, 0 }),
@@ -85,6 +87,22 @@ pub fn event(ev: [*c]const sapp.Event) void {
             },
             .LEFT => tryRotate((current.rot + 3) % 4),
             .RIGHT => tryRotate((current.rot + 1) % 4),
+            .LEFT_SHIFT => {
+                if (!bag.just_held) {
+                    var idx: usize = undefined;
+                    if (bag.held != null) {
+                        idx = bag.held.?;
+                    } else {
+                        idx = bag.nextPiece();
+                    }
+
+                    const last = current.idx;
+                    current = .{ .idx = idx, .pos = start_pos, .rot = 0 };
+                    gravity_timer = 0.0;
+                    bag.held = last;
+                    bag.just_held = true;
+                }
+            },
             else => {},
         };
     }

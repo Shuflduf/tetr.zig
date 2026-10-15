@@ -12,6 +12,8 @@ var prng: std.Random.DefaultPrng = undefined;
 
 var bag: [7]usize = undefined;
 var bag_counter: usize = 0;
+pub var held: ?usize = null;
+pub var just_held: bool = false;
 
 pub var next: [next_piece_count]usize = undefined;
 
