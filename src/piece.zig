@@ -4,6 +4,7 @@ const sapp = sokol.app;
 
 const root = @import("root");
 const board = @import("board.zig");
+const bag = @import("bag.zig");
 
 pub const Piece = struct {
     pos: [2]i8,
@@ -11,16 +12,8 @@ pub const Piece = struct {
     idx: usize,
 };
 
-const base_bag: [7]usize = .{ 0, 1, 2, 3, 4, 5, 6 };
 const start_pos: [2]i8 = .{ 3, 0 };
 const gravity_time: f64 = 0.5;
-const next_piece_count: usize = 2;
-
-var prng: std.Random.DefaultPrng = undefined;
-
-var bag: [7]usize = undefined;
-var bag_counter: usize = 0;
-var next: [next_piece_count]usize = undefined;
 
 var gravity_timer: f64 = 0.0;
 pub var current: Piece = undefined;
@@ -57,39 +50,11 @@ fn placePiece() void {
 }
 
 fn nextPiece() void {
-    if (bag_counter >= bag.len) {
-        shuffleBag();
-        bag_counter = 0;
-    }
-    current = .{ .idx = next[0], .pos = start_pos, .rot = 0 };
+    current = .{ .idx = bag.nextPiece(), .pos = start_pos, .rot = 0 };
     gravity_timer = 0.0;
-    for (0..next_piece_count - 1) |i| {
-        next[i] = next[i + 1];
-    }
-    next[next_piece_count - 1] = bag[bag_counter];
-    bag_counter += 1;
-}
-
-fn initRng() void {
-    prng = std.Random.DefaultPrng.init(sokol.time.now());
-}
-
-fn shuffleBag() void {
-    bag = base_bag;
-    prng.random().shuffle(usize, &bag);
-}
-
-fn initNext() void {
-    for (0..next_piece_count) |i| {
-        next[i] = bag[i];
-    }
-    bag_counter = next_piece_count;
 }
 
 pub fn init() void {
-    initRng();
-    shuffleBag();
-    initNext();
     nextPiece();
 }
 
@@ -113,6 +78,10 @@ pub fn event(ev: [*c]const sapp.Event) void {
                 if (!valid) placePiece();
 
                 gravity_timer = 0.0;
+            },
+            .S => {
+                while (tryMove(.{ 0, 1 })) {}
+                placePiece();
             },
             .LEFT => tryRotate((current.rot + 3) % 4),
             .RIGHT => tryRotate((current.rot + 1) % 4),

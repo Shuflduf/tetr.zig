@@ -11,6 +11,7 @@ const print = std.debug.print;
 
 const board = @import("board.zig");
 const piece = @import("piece.zig");
+const bag = @import("bag.zig");
 
 pub const board_width: i8 = 10;
 pub const board_height: i8 = 20;
@@ -44,6 +45,7 @@ export fn init() void {
         .depth_format = .NONE,
         .logger = .{ .func = slog.func },
     });
+    bag.init();
     piece.init();
 }
 
