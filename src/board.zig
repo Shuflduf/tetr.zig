@@ -29,6 +29,7 @@ pub const colours: [7]Colour = .{
 };
 
 const next_offset: [2]i8 = .{ 12, 1 };
+const hold_offset: [2]i8 = .{ -6, 1 };
 const board_colour: Colour = parseHex("#262626");
 
 pub var tiles: [root.board_width][root.board_height]?usize = undefined;
@@ -127,6 +128,23 @@ fn drawNextPieces(tile_size: f32, offset_x: f32, offset_y: f32) void {
     }
 }
 
+fn drawHoldPiece(tile_size: f32, offset_x: f32, offset_y: f32) void {
+    if (bag.held == null) return;
+
+    for (root.srs.pieces[bag.held.?][0]) |pos| {
+        const tile = .{ pos[0] + hold_offset[0], pos[1] + hold_offset[1] };
+        const col = colours[bag.held.?];
+
+        sgl.beginQuads();
+        sgl.c3b(col.r, col.g, col.b);
+        sgl.v2f(offset_x + tile_size * tile[0], offset_y + tile_size * tile[1]);
+        sgl.v2f(offset_x + tile_size * (tile[0] + 1), offset_y + tile_size * tile[1]);
+        sgl.v2f(offset_x + tile_size * (tile[0] + 1), offset_y + tile_size * (tile[1] + 1));
+        sgl.v2f(offset_x + tile_size * tile[0], offset_y + tile_size * (tile[1] + 1));
+        sgl.end();
+    }
+}
+
 pub fn safePos(tile: [2]i8) bool {
     if (tile[0] < 0 or tile[0] > root.board_width - 1) return false;
     if (tile[1] > root.board_height - 1) return false;
@@ -177,4 +195,5 @@ pub fn draw() void {
     drawTiles(tile_size, offset_x, offset_y);
     drawCurrentPiece(tile_size, offset_x, offset_y);
     drawNextPieces(tile_size, offset_x, offset_y);
+    drawHoldPiece(tile_size, offset_x, offset_y);
 }
