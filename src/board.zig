@@ -136,6 +136,18 @@ fn drawHoldPiece() void {
     }
 }
 
+fn drawGhost() void {
+    for (root.srs.pieces[piece.current.idx][piece.current.rot]) |offset| {
+        const pos = .{ piece.current.pos[0] + offset[0], piece.current.pos[1] + offset[1] + piece.ghost_offset };
+        var col = colours[piece.current.idx];
+        col.r /= 3;
+        col.g /= 3;
+        col.b /= 3;
+
+        tile(col, pos);
+    }
+}
+
 pub fn safePos(pos: [2]i8) bool {
     if (pos[0] < 0 or pos[0] > root.board_width - 1) return false;
     if (pos[1] > root.board_height - 1) return false;
@@ -184,6 +196,7 @@ pub fn draw() void {
 
     drawOutline();
     drawTiles();
+    drawGhost();
     drawCurrentPiece();
     drawNextPieces();
     drawHoldPiece();
