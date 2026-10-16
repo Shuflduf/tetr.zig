@@ -15,7 +15,9 @@ pub const Piece = struct {
 const das_time: f64 = 0.168;
 const arr_time: f64 = 0.033;
 const sdf_time: f64 = 0.100;
-const gravity_time: f64 = 0.5;
+const gravity_time: f64 = 0.500;
+const lock_delay_time: f64 = 0.500;
+const max_lock_delay_time: f64 = 2.000;
 
 const start_pos: [2]i8 = .{ 3, 0 };
 
@@ -29,7 +31,10 @@ var inputs: struct { left_held: bool, right_held: bool, down_held: bool, moving:
 var das_timer: f64 = 0.0;
 var sdf_timer: f64 = 0.0;
 var gravity_timer: f64 = 0.0;
+var lock_delay_timer: f64 = 0.0;
+var max_lock_delay_timer: f64 = 0.0;
 
+var touched_ground: ?i8 = null;
 pub var current: Piece = undefined;
 pub var ghost_offset: i8 = 0;
 
@@ -51,6 +56,19 @@ fn updateGhost() void {
     std.log.debug("g: {}", .{ghost_offset});
 }
 
+fn updateLockDelay() void {
+    const delta = sapp.frameDurationUnfiltered();
+    if (grounded()) |level| {
+        _ = level;
+        lock_delay_timer += delta;
+        if (lock_delay_timer > lock_delay_time) {
+            placePiece();
+        }
+    } else {
+        lock_delay_timer = 0.0;
+    }
+}
+
 fn tryMove(dir: [2]i8) bool {
     for (root.srs.pieces[current.idx][current.rot]) |pos| {
         const tile = .{ current.pos[0] + pos[0] + dir[0], current.pos[1] + pos[1] + dir[1] };
@@ -61,6 +79,8 @@ fn tryMove(dir: [2]i8) bool {
     current.pos[1] += dir[1];
 
     updateGhost();
+    lock_delay_timer = 0.0;
+    // updateLockDelay();
     return true;
 }
 
@@ -88,7 +108,20 @@ fn placePiece() void {
 fn nextPiece() void {
     current = .{ .idx = bag.nextPiece(), .pos = start_pos, .rot = 0 };
     gravity_timer = 0.0;
+    lock_delay_timer = 0.0;
     updateGhost();
+}
+
+fn grounded() ?i8 {
+    for (root.srs.pieces[current.idx][current.rot]) |offset| {
+        const pos = .{ current.pos[0] + offset[0], current.pos[1] + offset[1] + 1 };
+        if (!board.safePos(pos)) return current.pos[1];
+    }
+    return null;
+}
+
+pub fn getBrightness() f64 {
+    return 1.0 - 0.5 * lock_delay_timer / lock_delay_time;
 }
 
 pub fn init() void {
@@ -100,8 +133,10 @@ pub fn tick() void {
     gravity_timer += delta;
     if (gravity_timer > gravity_time) {
         gravity_timer = 0.0;
-        const valid = tryMove(.{ 0, 1 });
-        if (!valid) placePiece();
+        _ = tryMove(.{ 0, 1 });
+        // updateLockDelay();
+        // const valid = tryMove(.{ 0, 1 });
+        // if (!valid) placePiece();
     }
     if (inputs.left_held or inputs.right_held) {
         das_timer += delta;
@@ -120,10 +155,12 @@ pub fn tick() void {
         if (sdf_timer > sdf_time) {
             sdf_timer = 0.0;
             gravity_timer = 0.0;
-            const valid = tryMove(.{ 0, 1 });
-            if (!valid) placePiece();
+            _ = tryMove(.{ 0, 1 });
+            // const valid = tryMove(.{ 0, 1 });
+            // if (!valid) placePiece();
         }
     }
+    updateLockDelay();
 }
 
 pub fn event(ev: [*c]const sapp.Event) void {
@@ -144,9 +181,7 @@ pub fn event(ev: [*c]const sapp.Event) void {
                 das_timer = 0.0;
             },
             .W => {
-                const valid = tryMove(.{ 0, 1 });
-                if (!valid) placePiece();
-
+                _ = tryMove(.{ 0, 1 });
                 gravity_timer = 0.0;
                 inputs.down_held = true;
             },

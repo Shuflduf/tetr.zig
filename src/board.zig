@@ -106,7 +106,23 @@ fn drawTiles() void {
 fn drawCurrentPiece() void {
     for (root.srs.pieces[piece.current.idx][piece.current.rot]) |offset| {
         const pos = .{ piece.current.pos[0] + offset[0], piece.current.pos[1] + offset[1] };
-        const col = colours[piece.current.idx];
+        const og_col = colours[piece.current.idx];
+        var r: f64 = @floatFromInt(og_col.r);
+        var g: f64 = @floatFromInt(og_col.g);
+        var b: f64 = @floatFromInt(og_col.b);
+        r *= piece.getBrightness();
+        g *= piece.getBrightness();
+        b *= piece.getBrightness();
+        const col: Colour = .{
+            .r = @trunc(r),
+            .g = @trunc(g),
+            .b = @trunc(b),
+        };
+        // const col = .{
+        //     .r = @trunc(@floatFromInt(og_col.r) * piece.getBrightness()),
+        //     .g = @trunc(@floatFromInt(og_col.g) * piece.getBrightness()),
+        //     .b = @trunc(@floatFromInt(og_col.b) * piece.getBrightness()),
+        // };
 
         tile(col, pos);
     }
