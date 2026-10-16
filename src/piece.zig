@@ -59,9 +59,13 @@ fn updateGhost() void {
 fn updateLockDelay() void {
     const delta = sapp.frameDurationUnfiltered();
     if (grounded()) |level| {
-        _ = level;
+        if (touched_ground == null or level > touched_ground.?) {
+            touched_ground = level;
+            max_lock_delay_timer = 0.0;
+        }
         lock_delay_timer += delta;
-        if (lock_delay_timer > lock_delay_time) {
+        max_lock_delay_timer += delta;
+        if (lock_delay_timer > lock_delay_time or max_lock_delay_timer > max_lock_delay_time) {
             placePiece();
         }
     } else {
@@ -109,6 +113,8 @@ fn nextPiece() void {
     current = .{ .idx = bag.nextPiece(), .pos = start_pos, .rot = 0 };
     gravity_timer = 0.0;
     lock_delay_timer = 0.0;
+    max_lock_delay_timer = 0.0;
+    touched_ground = null;
     updateGhost();
 }
 
