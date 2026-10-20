@@ -12,6 +12,7 @@ pub const Piece = struct {
     idx: usize,
 };
 
+const i_piece_idx: usize = 4;
 const das_time: f64 = 0.168;
 const arr_time: f64 = 0.033;
 const sdf_time: f64 = 0.100;
@@ -89,12 +90,23 @@ fn tryMove(dir: [2]i8) bool {
 }
 
 fn tryRotate(new_rot: usize) void {
-    for (root.srs.pieces[current.idx][new_rot]) |pos| {
-        const tile = .{ current.pos[0] + pos[0], current.pos[1] + pos[1] };
-        if (!board.safePos(tile)) return;
+    var new = Piece{ .idx = current.idx, .pos = current.pos, .rot = new_rot };
+    if (canExist(new)) {
+        current = new;
+        lock_delay_timer = 0.0;
+    } else {
+        const kick_index = getKickIndex(current.rot, new_rot);
+        const table = if (current.idx != i_piece_idx) root.srs.kicks[kick_index] else root.srs.kicks_i[kick_index];
+        for (table) |kick| {
+            new.pos = .{ current.pos[0] + kick[0], current.pos[1] + kick[1] };
+            if (!canExist(new)) continue;
+
+            current = new;
+            lock_delay_timer = 0.0;
+            break;
+        }
     }
 
-    current.rot = new_rot;
     updateGhost();
 }
 
@@ -124,6 +136,22 @@ fn grounded() ?i8 {
         if (!board.safePos(pos)) return current.pos[1];
     }
     return null;
+}
+
+fn canExist(piece: Piece) bool {
+    for (root.srs.pieces[piece.idx][piece.rot]) |pos| {
+        const tile = .{ piece.pos[0] + pos[0], piece.pos[1] + pos[1] };
+        if (!board.safePos(tile)) return false;
+    }
+    return true;
+}
+
+fn getKickIndex(before: usize, after: usize) usize {
+    if (after == (before + 1) % 4) {
+        return before * 2;
+    } else {
+        return (before * 2 + 7) % 8;
+    }
 }
 
 pub fn getBrightness() f64 {

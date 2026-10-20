@@ -21,7 +21,7 @@ fn drawTitle() void {
     sdtx.home();
 
     sdtx.font(0);
-    sdtx.color3b(255, 255, 255);
+    sdtx.color3b(0xFF, 0xFF, 0xFF);
     sdtx.pos(0.5, 0.5);
     sdtx.puts("TETR.ZIG");
 }
