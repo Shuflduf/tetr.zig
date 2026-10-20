@@ -37,6 +37,12 @@ fn clear() void {
     sg.beginPass(.{ .action = action, .swapchain = sglue.swapchain() });
 }
 
+pub fn newGame() void {
+    bag.init();
+    piece.init();
+    board.init();
+}
+
 export fn init() void {
     stime.setup();
     sg.setup(.{
@@ -48,8 +54,7 @@ export fn init() void {
         .logger = .{ .func = slog.func },
     });
     sdtx.setup(.{ .logger = .{ .func = slog.func }, .fonts = @splat(sdtx.fontKc853()) });
-    bag.init();
-    piece.init();
+    newGame();
 }
 
 export fn frame() void {

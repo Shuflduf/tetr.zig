@@ -119,6 +119,13 @@ fn placePiece() void {
     board.clearLines();
     bag.just_held = false;
     nextPiece();
+
+    for (root.srs.pieces[current.idx][current.rot]) |pos| {
+        const tile = .{ current.pos[0] + pos[0], current.pos[1] + pos[1] };
+        if (!board.safePos(tile)) {
+            root.newGame();
+        }
+    }
 }
 
 fn nextPiece() void {
