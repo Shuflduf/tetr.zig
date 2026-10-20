@@ -14,6 +14,7 @@ const board = @import("board.zig");
 const piece = @import("piece.zig");
 const bag = @import("bag.zig");
 const ui = @import("ui.zig");
+const score = @import("score.zig");
 
 pub const board_width: i8 = 10;
 pub const board_height: i8 = 20;
@@ -41,6 +42,7 @@ pub fn newGame() void {
     bag.init();
     piece.init();
     board.init();
+    score.init();
 }
 
 export fn init() void {

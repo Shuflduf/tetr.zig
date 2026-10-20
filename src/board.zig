@@ -9,6 +9,7 @@ const sglue = sokol.glue;
 const root = @import("root");
 const piece = @import("piece.zig");
 const bag = @import("bag.zig");
+const score = @import("score.zig");
 // const print = std.debug.print;
 
 const Colour = struct {
@@ -28,8 +29,8 @@ pub const colours: [7]Colour = .{
     parseHex("#ff4fe0"),
 };
 
-const next_offset: [2]i8 = .{ 12, 1 };
-const hold_offset: [2]i8 = .{ -6, 1 };
+const next_offset: [2]i8 = .{ 12, 2 };
+const hold_offset: [2]i8 = .{ -6, 2 };
 const board_colour: Colour = parseHex("#262626");
 
 var tile_size: f32 = undefined;
@@ -180,6 +181,12 @@ pub fn clearLines() void {
         }
         full_rows[y] = true;
     }
+
+    var count: usize = 0;
+    for (full_rows) |full| {
+        if (full) count += 1;
+    }
+    score.lines(count);
 
     var dest: usize = root.board_height;
     var source: usize = root.board_height;

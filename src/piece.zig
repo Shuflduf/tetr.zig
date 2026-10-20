@@ -29,6 +29,7 @@ var inputs: struct { left_held: bool, right_held: bool, down_held: bool, moving:
     .moving = .NONE,
 };
 
+pub var last_tspin: enum { NONE, MINI, FULL } = .NONE;
 var das_timer: f64 = 0.0;
 var sdf_timer: f64 = 0.0;
 var gravity_timer: f64 = 0.0;
