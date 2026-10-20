@@ -7,11 +7,13 @@ const sgl = sokol.gl;
 const sapp = sokol.app;
 const sglue = sokol.glue;
 const stime = sokol.time;
+const sdtx = sokol.debugtext;
 const print = std.debug.print;
 
 const board = @import("board.zig");
 const piece = @import("piece.zig");
 const bag = @import("bag.zig");
+const ui = @import("ui.zig");
 
 pub const board_width: i8 = 10;
 pub const board_height: i8 = 20;
@@ -45,6 +47,7 @@ export fn init() void {
         .depth_format = .NONE,
         .logger = .{ .func = slog.func },
     });
+    sdtx.setup(.{ .logger = .{ .func = slog.func }, .fonts = @splat(sdtx.fontKc853()) });
     bag.init();
     piece.init();
 }
@@ -58,6 +61,7 @@ export fn frame() void {
 
     clear();
     board.draw();
+    ui.draw();
 
     sgl.draw();
     sg.endPass();
