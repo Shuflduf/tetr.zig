@@ -13,6 +13,7 @@ pub const Piece = struct {
 };
 
 const i_piece_idx: usize = 4;
+const t_piece_idx: usize = 6;
 const das_time: f64 = 0.168;
 const arr_time: f64 = 0.033;
 const sdf_time: f64 = 0.100;
@@ -86,6 +87,7 @@ fn tryMove(dir: [2]i8) bool {
 
     updateGhost();
     lock_delay_timer = 0.0;
+    last_tspin = .NONE;
     // updateLockDelay();
     return true;
 }
@@ -95,6 +97,7 @@ fn tryRotate(new_rot: usize) void {
     if (canExist(new)) {
         current = new;
         lock_delay_timer = 0.0;
+        checkTspin(false);
     } else {
         const kick_index = getKickIndex(current.rot, new_rot);
         const table = if (current.idx != i_piece_idx) root.srs.kicks[kick_index] else root.srs.kicks_i[kick_index];
@@ -136,6 +139,21 @@ fn nextPiece() void {
     max_lock_delay_timer = 0.0;
     touched_ground = null;
     updateGhost();
+}
+
+fn checkTspin(kick: bool) void {
+    const current_3x3 = .{
+        .{ current.pos[0], current.pos[1] },
+        .{ current.pos[0] + 2, current.pos[1] },
+        .{ current.pos[0] + 2, current.pos[1] + 2 },
+        .{ current.pos[0], current.pos[1] + 2 },
+    };
+    var on_front = .{ .{ 0, 0 }, .{ 0, 0 } };
+    var on_back = .{ .{ 0, 0 }, .{ 0, 0 } };
+    for (0..2) |i| {
+        on_front[i] = current_3x3[(i + current.rot) % 4];
+        on_back[i] = current_3x3[(i + current.rot + 2) % 4];
+    }
 }
 
 fn grounded() ?i8 {
