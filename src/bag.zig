@@ -5,7 +5,7 @@ const sapp = sokol.app;
 const root = @import("root");
 const board = @import("board.zig");
 
-const next_piece_count: usize = 2;
+const next_piece_count: usize = 1;
 const base_bag: [7]usize = .{ 0, 1, 2, 3, 4, 5, 6 };
 
 var prng: std.Random.DefaultPrng = undefined;

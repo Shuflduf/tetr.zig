@@ -11,8 +11,8 @@ const controls: [7][:0]const u8 = .{
     "D - RIGHT",
     "LEFT - CCW",
     "RIGHT - CW",
-    "S - SOFT",
-    "W - HARD",
+    "S - HARD",
+    "W - SOFT",
     "SHIFT - HOLD",
 };
 
