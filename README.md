@@ -5,6 +5,12 @@
 
 My first proper Zig project, made using [sokol-zig](https://github.com/floooh/sokol-zig) and WASM.
 
+
+
+https://github.com/user-attachments/assets/8d8707ce-bdf2-4c54-8ba9-200642b61289
+
+
+
 # Features
 - Piece movement
 - Line clears
