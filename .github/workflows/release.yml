@@ -21,7 +21,7 @@ jobs:
         version: 0.17.0
 
     - name: Install Emscripten
-    - run: zig build install-emsdk
+      run: zig build install-emsdk
 
     - name: Build for web
       run: zig build -Dtarget=wasm32-emscripten --release=small
