@@ -56,7 +56,6 @@ fn updateGhost() void {
     }
 
     ghost_offset -= 1;
-    std.log.debug("g: {}", .{ghost_offset});
 }
 
 fn updateLockDelay() void {
@@ -97,16 +96,17 @@ fn tryRotate(new_rot: usize) void {
     if (canExist(new)) {
         current = new;
         lock_delay_timer = 0.0;
-        checkTspin(false);
+        checkTspin(0);
     } else {
         const kick_index = getKickIndex(current.rot, new_rot);
         const table = if (current.idx != i_piece_idx) root.srs.kicks[kick_index] else root.srs.kicks_i[kick_index];
-        for (table) |kick| {
+        for (table, 0..) |kick, i| {
             new.pos = .{ current.pos[0] + kick[0], current.pos[1] + kick[1] };
             if (!canExist(new)) continue;
 
             current = new;
             lock_delay_timer = 0.0;
+            checkTspin(i + 1);
             break;
         }
     }
@@ -138,21 +138,67 @@ fn nextPiece() void {
     lock_delay_timer = 0.0;
     max_lock_delay_timer = 0.0;
     touched_ground = null;
+    last_tspin = .NONE;
     updateGhost();
 }
 
-fn checkTspin(kick: bool) void {
-    const current_3x3 = .{
+fn checkTspin(kick: usize) void {
+    const current_3x3: [4][2]i8 = .{
         .{ current.pos[0], current.pos[1] },
         .{ current.pos[0] + 2, current.pos[1] },
         .{ current.pos[0] + 2, current.pos[1] + 2 },
         .{ current.pos[0], current.pos[1] + 2 },
     };
-    var on_front = .{ .{ 0, 0 }, .{ 0, 0 } };
-    var on_back = .{ .{ 0, 0 }, .{ 0, 0 } };
+    var on_front: [2][2]i8 = .{ .{ 0, 0 }, .{ 0, 0 } };
+    var on_back: [2][2]i8 = .{ .{ 0, 0 }, .{ 0, 0 } };
     for (0..2) |i| {
         on_front[i] = current_3x3[(i + current.rot) % 4];
         on_back[i] = current_3x3[(i + current.rot + 2) % 4];
+    }
+
+    switch (kick) {
+        0 => {
+            for (on_front) |pos| {
+                if (board.safePos(pos)) {
+                    last_tspin = .NONE;
+                    return;
+                }
+            }
+            for (on_back) |pos| {
+                if (!board.safePos(pos)) {
+                    last_tspin = .FULL;
+                    return;
+                }
+            }
+        },
+        4 => {
+            for (on_back) |pos| {
+                if (board.safePos(pos)) {
+                    last_tspin = .NONE;
+                    return;
+                }
+            }
+            for (on_front) |pos| {
+                if (!board.safePos(pos)) {
+                    last_tspin = .FULL;
+                    return;
+                }
+            }
+        },
+        else => {
+            for (on_back) |pos| {
+                if (board.safePos(pos)) {
+                    last_tspin = .NONE;
+                    return;
+                }
+            }
+            for (on_front) |pos| {
+                if (!board.safePos(pos)) {
+                    last_tspin = .MINI;
+                    return;
+                }
+            }
+        },
     }
 }
 

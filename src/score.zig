@@ -12,10 +12,10 @@ var high_score: u32 = 0;
 pub fn lines(count: usize) void {
     switch (piece.last_tspin) {
         .FULL => score += root.srs.scoring_tspin[count],
+        .MINI => score += root.srs.scoring_mini[count],
         .NONE => if (count > 0) {
             score += root.srs.scoring_lines[count - 1];
         },
-        .MINI => {},
     }
     if (score > high_score) high_score = score;
 }
